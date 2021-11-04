@@ -41,19 +41,124 @@ CheckInputDirectory(){
 CreateYearRepositories(){
 	#Extraction des différentes années de prises des photos
 	photoYears=$(exiftool -T -DateTimeOriginal "$inputDirectory" -d %Y | sort --unique)
+
+	rm -f "$outputDirectory"/index.css 
+	#Création du fichier css
+	touch "$outputDirectory"/index.css
+	    echo "
+    photo {
+    border: thin #c0c0c0 solid;
+    display: flex;
+    flex-flow: column;
+    padding: 5px;
+    max-width: 220px;
+    margin: auto;
+    }
+
+    .header {
+    padding: 30px;
+    text-align: center;
+    background: #36a6c7;
+    font : arial
+    color: white;
+    font-size: 30px;
+    }
+
+    .year, .year:visited {
+    border: 3px #1a5e92 solid;
+    display: flex;
+    float: left;
+    background-color: white;
+    color: #fff;
+    font: smaller arial;
+    padding: 10px;
+    text-align: center;
+    font-size: 40px;
+    margin : 10px;
+    }
+
+    a:link, a:visited{
+    	text-decoration : none;
+    	color : black;
+    	display: inline-block;
+    }
+
+    .year:hover{	
+    	border: 3px #1a5e92 solid;
+	   display: flex;
+	   float: left;
+	   background-color: #70befa;
+	   color: #fff;
+	   font: smaller arial;
+	   padding: 10px;
+	   text-align: center;
+	   font-size: 40px;
+	   margin : 10px;
+    }
+
+    body {
+    color: black;
+    }
+
+    img {
+    max-width: 220px;
+    max-height: 150px;
+    margin : auto;
+    text-align:center;
+    display : block
+
+    }
+
+    .img_div{
+        float: left;
+        padding: 20px;
+        border: 3px #1a5e92 solid;
+        background-color: white;
+        margin : 10px;
+    }
+
+    .img_div:hover{
+        float: left;
+        padding: 20px;
+        border: 3px #1a5e92 solid;
+        background-color: #70befa;
+    }
+
+    figcaption {
+	    background-color: #222;
+	    color: #fff;
+	    font: italic smaller sans-serif;
+	    padding: 3px;
+	    text-align: center;
+    }
+
+
+
+
+    }">>"$outputDirectory"/index.css
 	rm -f "$outputDirectory"/index.html
 	#Création du fichier html
 	touch "$outputDirectory"/index.html
-	albumHtmlContent="<!DOCTYPE html>
+
+	albumHtmlContent="<!DOCTYPE html    figcaption {
+    background-color: #222;
+    color: #fff;
+    font: italic smaller sans-serif;
+    padding: 3px;
+    text-align: center;
+    }>
 		<html>
 
 		<head>
 		<title>Album photo</title>
+		<link rel=\"stylesheet\" href=\"$outputDirectory/index.css\">
 		<meta charset=\"utf-8\"/>
 		</head>
 		<body>
+		<div class=\"header\">
+		<h1>Album photo</h1>
+		</div>"
 
-		<h1>Album photo</h1>"
 	echo "$albumHtmlContent">>"$outputDirectory"/index.html
 	#Création des répertoires des années et de leur fichier html
 	for y in $photoYears
@@ -66,7 +171,7 @@ CreateYearRepositories(){
 			linkToRepository=$outputDirectory/$y/index.html
 			#Ajout du lien du fichier html principal vers le fichier de l'année
 
-			echo "<a href=\"$linkToRepository\">$y</a><br></br>">>"$outputDirectory"/index.html
+			echo "<div class=\"year\"><a href=\"$linkToRepository\">$y</a></div>">>"$outputDirectory"/index.html
 		fi
 	done
 	echo "</body></html>">>"$outputDirectory"/index.html
@@ -144,12 +249,14 @@ FillYearIndex(){
 				<html>
 
 				<head>
-				<title>Album photo $y</title>
+				<title>Mon année $y !</title>
+				<link rel=\"stylesheet\" href=\"$outputDirectory/index.css\">
 				<meta charset=\"utf-8\"/>
 				</head>
 				<body>
-
-				<h1>Album photo $y</h1>"
+				<div class=\"header\">
+				<h1>Mon année $y !</h1>
+				</div>"
 			echo "$yearHtmlContent" >> "$outputDirectory"/"$y"/index.html
 			photoDays=$(exiftool -T -DateTimeOriginal "$inputDirectory" -d %Y_%m_%d | sort --unique | grep $y)
 			for d in $photoDays
@@ -161,7 +268,7 @@ FillYearIndex(){
 					thumbName="${thumbName}-thumb.jpg"
 					linkToThumb="$outputDirectory"/"$y"/"$d"/.thumbs/"$thumbName"
 					#Crée un lien cliquable sous forme de vignette vers l'image correspondante
-					echo "<a href=\"$linkToImage\"><img src=\"$linkToThumb\" alt=\"alternate_text\"></a>">>"$outputDirectory"/"$y"/index.html
+					echo "<div class=\"img_div\"><a href=\"$linkToImage\"><img src=\"$linkToThumb\"><figcaption>$img</figcaption></a></div>">>"$outputDirectory"/"$y"/index.html
 				done
 			done
 			echo "</body></html>" >> "$outputDirectory"/"$y"/index.html
@@ -169,17 +276,34 @@ FillYearIndex(){
 	done
 }
 
-#On instancie les repertoires d'entrée et de sortie donnés en arguments
-inputDirectory="$1"
-outputDirectory="$2"
+if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]
+then
+	Help
+elif ! command -v convert &> /dev/null
+then
+	echo "Please check you have installed ImageMagick"
+elif ! command -v exiftool &> /dev/null
+then
+	echo "Please check you have installed exiftool"
+else
+	#On instancie les repertoires d'entrée et de sortie donnés en arguments
+	if [[ -z $1 ]]
+	then
+		echo "Please give an input directory"
+	elif [[ -z $2 ]]
+	then
+		echo "Please give an outputDirectory"
+	else
+		inputDirectory="$1"
+		outputDirectory="$2"
+		#On vérifie que le répertoire d'entrée correspond aux attentes
+		CheckInputDirectory
+		mkdir -p "$outputDirectory"
+		CreateYearRepositories
+		CreateDayDirectories
+		MovePhotosToDirectories
+		CreateThumbs
+		FillYearIndex
+	fi
 
-
-#On vérifie que le répertoire d'entrée correspond aux attentes
-CheckInputDirectory
-
-mkdir -p "$outputDirectory"
-CreateYearRepositories
-CreateDayDirectories
-MovePhotosToDirectories
-CreateThumbs
-FillYearIndex
+fi
