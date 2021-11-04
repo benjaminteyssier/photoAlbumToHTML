@@ -44,6 +44,17 @@ CreateYearRepositories(){
 	rm -f "$outputDirectory"/index.html
 	#Création du fichier html
 	touch "$outputDirectory"/index.html
+	albumHtmlContent="<!DOCTYPE html>
+		<html>
+
+		<head>
+		<title>Album photo</title>
+		<meta charset=\"utf-8\"/>
+		</head>
+		<body>
+
+		<h1>Album photo</h1>"
+	echo "$albumHtmlContent">>"$outputDirectory"/index.html
 	#Création des répertoires des années et de leur fichier html
 	for y in $photoYears
 	do
@@ -54,9 +65,11 @@ CreateYearRepositories(){
 			touch "$outputDirectory"/$y/index.html
 			linkToRepository=$outputDirectory/$y/index.html
 			#Ajout du lien du fichier html principal vers le fichier de l'année
+
 			echo "<a href=\"$linkToRepository\">$y</a><br></br>">>"$outputDirectory"/index.html
 		fi
 	done
+	echo "</body></html>">>"$outputDirectory"/index.html
 }
 
 #Cette fonction extrait les différents jours de prise des photos et crée les répertoires associés dans les répertoires années correspondant
@@ -69,7 +82,9 @@ CreateDayDirectories(){
 			photoDays=$(exiftool -T -DateTimeOriginal "$inputDirectory" -d %Y_%m_%d | sort --unique | grep $y)
 			for d in $photoDays
 			do
+				#Création du dossier reçevant les images
 				mkdir -p "$outputDirectory"/$y/$d
+				#Création du dossier reçevant les vignettes
 				mkdir -p "$outputDirectory"/$y/$d/.thumbs
 			done
 		fi
@@ -81,16 +96,20 @@ MovePhotosToDirectories(){
 	#Sélection des fichier de type image
 	for img in $(ls "$inputDirectory" -a | grep ".png\|.PNG\|.jpg\|.JPG")
 	do
+		#Extraction de l'année de la prise de la photo img
 		photoYear=$(exiftool -T -DateTimeOriginal "$inputDirectory"/$img -d %Y)
 		if [[ ! "$photoYear" == "-" ]]
 		then
+			#Extraction du jour de la prise de la photo img
 			photoDay=$(exiftool -T -DateTimeOriginal "$inputDirectory"/$img -d %Y_%m_%d)
+			#Renommage de la photo
 			photoName="${photoDay}_${img}"
 			cp -a -n "$inputDirectory"/$img "$outputDirectory"/"$photoYear"/"$photoDay"/"$photoName"
 		fi
 	done
 }
 
+#Cette fonction crée les vignettes et les dépose dans les répertoires prévus à cet effet
 CreateThumbs(){
 	for y in $photoYears
 	do
@@ -101,10 +120,12 @@ CreateThumbs(){
 			do
 				for img in $(ls "$outputDirectory"/"$y"/"$d" )
 				do
+					#Renommage de la vignette
 					thumbName=$(echo "$img" | cut -f 1 -d '.')
 					thumbName="${thumbName}-thumb.jpg"
 					if [[ ! -f "$outputDirectory"/"$y"/"$d"/.thumbs/"$thumbName" ]]
 					then
+						#Redimensionnement des images avec ImageMagick pour obtenir une vignette de 150 de hauteur
 						convert "$outputDirectory"/"$y"/"$d"/"$img" -geometry x150 "$outputDirectory"/"$y"/"$d"/.thumbs/"$thumbName"
 					fi
 				done
@@ -113,11 +134,23 @@ CreateThumbs(){
 	done
 }
 
+#Ecrit les liens des images à travers les vignettes dans le fichier html de l'année
 FillYearIndex(){
 	for y in $photoYears
 	do
 		if [[ ! "$y" == "-" ]]
 		then
+			yearHtmlContent="<!DOCTYPE html>
+				<html>
+
+				<head>
+				<title>Album photo $y</title>
+				<meta charset=\"utf-8\"/>
+				</head>
+				<body>
+
+				<h1>Album photo $y</h1>"
+			echo "$yearHtmlContent" >> "$outputDirectory"/"$y"/index.html
 			photoDays=$(exiftool -T -DateTimeOriginal "$inputDirectory" -d %Y_%m_%d | sort --unique | grep $y)
 			for d in $photoDays
 			do
@@ -127,9 +160,11 @@ FillYearIndex(){
 					thumbName=$(echo "$img" | cut -f 1 -d '.')
 					thumbName="${thumbName}-thumb.jpg"
 					linkToThumb="$outputDirectory"/"$y"/"$d"/.thumbs/"$thumbName"
+					#Crée un lien cliquable sous forme de vignette vers l'image correspondante
 					echo "<a href=\"$linkToImage\"><img src=\"$linkToThumb\" alt=\"alternate_text\"></a>">>"$outputDirectory"/"$y"/index.html
 				done
 			done
+			echo "</body></html>" >> "$outputDirectory"/"$y"/index.html
 		fi
 	done
 }
@@ -144,12 +179,7 @@ CheckInputDirectory
 
 mkdir -p "$outputDirectory"
 CreateYearRepositories
-echo 1
 CreateDayDirectories
-echo 2
 MovePhotosToDirectories
-echo 3
 CreateThumbs
-echo 4
 FillYearIndex
-echo 5
