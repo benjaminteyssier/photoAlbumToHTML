@@ -110,7 +110,7 @@ DESCRIPTION
 	└── index.html
 
 AUTHOR
-	Written by the clever Benjamin Teyssier.
+	Written by Benjamin Teyssier.
 
 REPORTING BUGS
 	palbum has no known bug  at that time.  However, if you find one, you
