@@ -1,0 +1,91 @@
+
+    photo {
+    border: thin #c0c0c0 solid;
+    display: flex;
+    flex-flow: column;
+    padding: 5px;
+    max-width: 220px;
+    margin: auto;
+    }
+
+    .header {
+    padding: 30px;
+    text-align: center;
+    background: #36a6c7;
+    font : arial
+    color: white;
+    font-size: 30px;
+    }
+
+    .year, .year:visited {
+    border: 3px #1a5e92 solid;
+    display: flex;
+    float: left;
+    background-color: white;
+    color: #fff;
+    font: smaller arial;
+    padding: 10px;
+    text-align: center;
+    font-size: 40px;
+    margin : 10px;
+    }
+
+    a:link, a:visited{
+    	text-decoration : none;
+    	color : black;
+    	display: inline-block;
+    }
+
+    .year:hover{	
+    	border: 3px #1a5e92 solid;
+	   display: flex;
+	   float: left;
+	   background-color: #70befa;
+	   color: #fff;
+	   font: smaller arial;
+	   padding: 10px;
+	   text-align: center;
+	   font-size: 40px;
+	   margin : 10px;
+    }
+
+    body {
+    color: black;
+    }
+
+    img {
+    max-width: 220px;
+    max-height: 150px;
+    margin : auto;
+    text-align:center;
+    display : block
+
+    }
+
+    .img_div{
+        float: left;
+        padding: 20px;
+        border: 3px #1a5e92 solid;
+        background-color: white;
+        margin : 10px;
+    }
+
+    .img_div:hover{
+        float: left;
+        padding: 20px;
+        border: 3px #1a5e92 solid;
+        background-color: #70befa;
+    }
+
+    figcaption {
+	    background-color: #222;
+	    color: #fff;
+	    font: italic smaller sans-serif;
+	    padding: 3px;
+	    text-align: center;
+    }
+
+
+
+
+    }

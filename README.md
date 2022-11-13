@@ -113,7 +113,7 @@ AUTHOR
 	Written by Benjamin Teyssier.
 
 REPORTING BUGS
-	palbum has no known bug  at that time.  However, if you find one, you
+	palbum has no known bug at that time.  However, if you find one, you
 	may want to report it at benjamin.teyssier@etu.emse.fr.
 
 COPYRIGHT
